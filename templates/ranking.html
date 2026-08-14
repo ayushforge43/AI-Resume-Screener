@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candidate Ranking — Resume Intelligence</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">AI</div>
+      <div>
+        <div class="brand-text">Resume Intelligence</div>
+        <div class="brand-sub">SCREENING · RANKING · INTERVIEW PREP</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="{{ url_for('home') }}">Dashboard</a>
+      <a class="nav-link" href="{{ url_for('results') }}">Candidates</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <h1 class="page-title">Candidate Ranking</h1>
+  <p class="page-sub">
+    {{ total_candidates }} candidate{{ 's' if total_candidates != 1 else '' }} ranked
+    {% if job_title %}for <span class="tag-inline">{{ job_title }}</span>{% endif %}
+    — highest match first.
+  </p>
+
+  <form class="toolbar" method="get" action="{{ url_for('results') }}">
+    <input type="text" name="search" placeholder="Search by name or email..." value="{{ search }}">
+    <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+    <div class="filter-pills">
+      {% set filters = ['Excellent Match', 'Strong Match', 'Potential Match', 'Low Match'] %}
+      <a href="{{ url_for('results', search=search) }}" class="pill {{ 'active' if not status_filter }}">All</a>
+      {% for f in filters %}
+        <a href="{{ url_for('results', search=search, status=f) }}" class="pill {{ 'active' if status_filter == f }}">{{ f }}</a>
+      {% endfor %}
+    </div>
+  </form>
+
+  {% if candidates %}
+  <div class="candidate-row header">
+    <div>#</div><div>Candidate</div><div>Score</div><div>Skills</div><div>Experience</div><div>Status</div>
+  </div>
+
+  {% for c in candidates %}
+  <a class="glass candidate-row" href="{{ url_for('profile', candidate_id=c.id) }}" style="animation-delay: {{ loop.index0 * 0.03 }}s;">
+    <div class="rank-num">{{ (current_page - 1) * 20 + loop.index }}</div>
+    <div>
+      <div class="cand-name">{{ c.name }}</div>
+      <div class="cand-email">{{ c.email }}</div>
+      {% if c.best_fit_roles %}<div style="font-size:10.5px; color:var(--primary); margin-top:2px;">Best fit: {{ c.best_fit_roles[0].role }}</div>{% endif %}
+    </div>
+    <div class="score-cell"><span class="score-value" style="color: {% if c.score >= 85 %}var(--accent-teal){% elif c.score >= 70 %}var(--accent-violet){% elif c.score >= 50 %}var(--accent-amber){% else %}var(--accent-rose){% endif %};">{{ c.score }}%</span></div>
+    <div class="skill-chips">
+      {% for s in c.matched_skills[:3] %}<span class="chip chip-matched">{{ s }}</span>{% endfor %}
+      {% if c.matched_skills|length > 3 %}<span class="chip chip-extra">+{{ c.matched_skills|length - 3 }}</span>{% endif %}
+    </div>
+    <div style="font-size:12px; color:var(--text-muted);">{{ c.experience|length }} entries</div>
+    <div><span class="badge badge-{{ c.status.split(' ')[0].lower() }}">{{ c.status }}</span></div>
+  </a>
+  {% endfor %}
+
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    {% for p in range(1, total_pages + 1) %}
+      <a class="page-link {{ 'active' if p == current_page }}" href="{{ url_for('results', page=p, search=search, status=status_filter) }}">{{ p }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="glass empty-state">
+    <div style="font-size:32px; margin-bottom:10px;">🔍</div>
+    <div style="font-weight:600; color:var(--text-secondary); margin-bottom:6px;">No candidates found</div>
+    <div style="font-size:13px;">Try a different search term, or <a href="{{ url_for('home') }}" style="color:var(--accent-violet);">analyze more resumes</a>.</div>
+  </div>
+  {% endif %}
+
+  <div class="footer-note">Resume Intelligence · AI-assisted screening pipeline · results should always be reviewed by a human recruiter</div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

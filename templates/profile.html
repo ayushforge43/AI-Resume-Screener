@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ candidate.name }} — Candidate Profile</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">AI</div>
+      <div>
+        <div class="brand-text">Resume Intelligence</div>
+        <div class="brand-sub">SCREENING · RANKING · INTERVIEW PREP</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="{{ url_for('home') }}">Dashboard</a>
+      <a class="nav-link" href="{{ url_for('results') }}">← All Candidates</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="glass profile-header">
+    <div class="profile-id">
+      <h2>{{ candidate.name }}</h2>
+      <div class="profile-meta">
+        <span>✉ {{ candidate.email }}</span>
+        <span>☎ {{ candidate.phone }}</span>
+        {% if job_title %}<span>🎯 {{ job_title }}</span>{% endif %}
+      </div>
+      <div style="margin-top:12px;"><span class="badge badge-{{ candidate.status.split(' ')[0].lower() }}">{{ candidate.status }}</span></div>
+    </div>
+
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+          <circle id="score-circle" cx="46" cy="46" r="40" fill="none" stroke="url(#grad)" stroke-width="8"
+                  stroke-linecap="round" stroke-dasharray="{{ 251 }}" stroke-dashoffset="{{ 251 }}"
+                  data-target="{{ 251 - (251 * candidate.score / 100) }}"/>
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#8f7bfb"/>
+              <stop offset="100%" stop-color="#34e0c9"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-value">{{ candidate.score }}%</div>
+      </div>
+      <div>
+        <div style="font-size:11.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Match Score</div>
+        <div style="font-size:13px; color:var(--text-secondary); max-width:180px; margin-top:4px;">Overall fit vs. job requirements</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass section-block" style="margin-bottom:22px;">
+    <h3>🧭 Best-Fit Position in the Company</h3>
+    <p style="font-size:12.5px; color:var(--ink-muted); margin-top:-6px; margin-bottom:16px;">{{ candidate.best_fit_reason }}</p>
+    <div class="role-grid">
+      {% for r in candidate.best_fit_roles %}
+      <div class="glass glass-static role-card {{ 'top-fit' if loop.first }}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-weight:600; font-size:13.5px;">{{ r.role }}{% if loop.first %} <span style="font-size:10px; color:var(--primary); font-weight:700;">· TOP FIT</span>{% endif %}</div>
+          <div class="score-value" style="font-size:14px; color: {% if r.fit_score >= 70 %}var(--teal){% elif r.fit_score >= 40 %}var(--amber){% else %}var(--rose){% endif %};">{{ r.fit_score }}%</div>
+        </div>
+        <div class="breakdown-bar" style="margin-bottom:10px;"><div class="breakdown-fill" data-pct="{{ r.fit_score }}"></div></div>
+        <div class="skill-chips">
+          {% for s in r.matched_skills %}<span class="chip chip-matched">{{ s }}</span>{% endfor %}
+          {% for s in r.missing_skills %}<span class="chip chip-extra">{{ s }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="profile-grid">
+
+    <div>
+      <div class="glass section-block">
+        <h3>📊 Score Breakdown</h3>
+        <div class="breakdown-row"><div class="breakdown-label">Skills Match</div><div class="breakdown-bar"><div class="breakdown-fill" data-pct="{{ candidate.breakdown.skills_match }}"></div></div><div class="breakdown-pct">{{ candidate.breakdown.skills_match }}%</div></div>
+        <div class="breakdown-row"><div class="breakdown-label">Experience Match</div><div class="breakdown-bar"><div class="breakdown-fill" data-pct="{{ candidate.breakdown.experience_match }}"></div></div><div class="breakdown-pct">{{ candidate.breakdown.experience_match }}%</div></div>
+        <div class="breakdown-row"><div class="breakdown-label">Education Match</div><div class="breakdown-bar"><div class="breakdown-fill" data-pct="{{ candidate.breakdown.education_match }}"></div></div><div class="breakdown-pct">{{ candidate.breakdown.education_match }}%</div></div>
+        <div class="breakdown-row"><div class="breakdown-label">Keywords Match</div><div class="breakdown-bar"><div class="breakdown-fill" data-pct="{{ candidate.breakdown.keywords_match }}"></div></div><div class="breakdown-pct">{{ candidate.breakdown.keywords_match }}%</div></div>
+        <div class="breakdown-row"><div class="breakdown-label"><strong style="color:var(--text-primary);">Overall Fit</strong></div><div class="breakdown-bar"><div class="breakdown-fill" data-pct="{{ candidate.breakdown.overall_fit }}"></div></div><div class="breakdown-pct">{{ candidate.breakdown.overall_fit }}%</div></div>
+      </div>
+
+      <div class="glass section-block">
+        <h3>🧩 Skills Analysis</h3>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:6px;">MATCHING SKILLS</div>
+          <div class="skill-chips">
+            {% for s in candidate.matched_skills %}<span class="chip chip-matched">{{ s }}</span>{% else %}<span style="font-size:12px; color:var(--text-muted);">None detected</span>{% endfor %}
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:6px;">MISSING SKILLS</div>
+          <div class="skill-chips">
+            {% for s in candidate.missing_skills %}<span class="chip chip-missing">{{ s }}</span>{% else %}<span style="font-size:12px; color:var(--text-muted);">None — full coverage</span>{% endfor %}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:6px;">ADDITIONAL SKILLS</div>
+          <div class="skill-chips">
+            {% for s in candidate.additional_skills %}<span class="chip chip-extra">{{ s }}</span>{% else %}<span style="font-size:12px; color:var(--text-muted);">None</span>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="glass section-block">
+        <h3>🤖 AI Analysis</h3>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">{{ candidate.summary }}</p>
+      </div>
+
+      <div class="glass section-block">
+        <h3>✅ Hiring Recommendation</h3>
+        <div class="reco-banner reco-{{ 'strongly' if candidate.recommendation == 'Strongly Recommended' else ('recommended' if candidate.recommendation == 'Recommended' else ('consider' if candidate.recommendation == 'Consider' else 'not')) }}">
+          <div style="font-weight:700; font-size:14px;">{{ candidate.recommendation }}</div>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">{{ candidate.reason }}</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="glass section-block">
+        <h3>🎓 Education</h3>
+        <ul class="bullet-list">
+          {% for e in candidate.education %}<li>{{ e }}</li>{% else %}<li>No education section detected.</li>{% endfor %}
+        </ul>
+      </div>
+
+      <div class="glass section-block">
+        <h3>💼 Experience</h3>
+        <ul class="bullet-list">
+          {% for e in candidate.experience %}<li>{{ e }}</li>{% else %}<li>No experience section detected.</li>{% endfor %}
+        </ul>
+      </div>
+
+      <div class="glass section-block">
+        <h3>🛠 Projects</h3>
+        <ul class="bullet-list">
+          {% for p in candidate.projects %}<li>{{ p }}</li>{% else %}<li>No projects section detected.</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interview Questions -->
+  <div style="margin-top: 10px;">
+    <h2 style="font-size:18px; margin-bottom:4px;">Personalized Interview Questions</h2>
+    <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">
+      Generated for <strong style="color:var(--text-secondary);">{{ candidate.name }}</strong>
+      {% if job_title %} · Job: <strong style="color:var(--text-secondary);">{{ job_title }}</strong>{% endif %}
+      — built from this candidate's own skills, projects and experience.
+    </p>
+
+    <div class="question-toolbar">
+      <div class="qcat-filters" id="qcat-filters">
+        <button class="pill active" data-cat="all">All</button>
+        <button class="pill" data-cat="Technical">Technical</button>
+        <button class="pill" data-cat="Resume-Based">Resume-Based</button>
+        <button class="pill" data-cat="Job-Specific">Job-Specific</button>
+        <button class="pill" data-cat="Behavioral">Behavioral</button>
+        <button class="pill" data-cat="Skill Gap">Skill Gap</button>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <form method="post" action="{{ url_for('regenerate_questions', candidate_id=candidate.id) }}">
+          <button type="submit" class="btn btn-ghost btn-sm">↻ Regenerate</button>
+        </form>
+        <button class="btn btn-ghost btn-sm" id="export-questions">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="question-grid" id="question-grid">
+      {% for q in candidate.questions %}
+      <div class="glass q-card" data-cat="{{ q.category }}">
+        <div class="q-card-top">
+          <span class="q-category">{{ q.category }}</span>
+          <span class="q-num">{{ '%02d' % q.id }}</span>
+        </div>
+        <div class="q-text">{{ q.question }}</div>
+        <div class="q-footer">
+          <span class="diff-badge diff-{{ q.difficulty.lower() }}">{{ q.difficulty }}</span>
+          <button class="copy-btn" data-question="{{ q.question }}">Copy</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="footer-note">Resume Intelligence · AI-assisted screening pipeline · results should always be reviewed by a human recruiter</div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
