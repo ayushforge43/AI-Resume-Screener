@@ -1,77 +1,147 @@
-# Resume Intelligence — Smart Resume Screening & Candidate Ranking
+# 🤖 AI Resume Screener
 
-An AI-assisted recruitment dashboard: upload resumes, describe a role, get
-scored/ranked candidates and a personalized interview question set for each
-one — built on your original Flask pipeline.
+### AI-Powered Resume Screening, Candidate Ranking & Interview Preparation
 
-## Run it
+An intelligent web application that helps recruiters analyze resumes against a specific job description, calculate candidate match scores, identify skill gaps, rank candidates, and generate personalized interview questions.
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
+🚀 **Live Demo:** https://ai-resume-screener-lzl3.onrender.com
 
-Then open http://127.0.0.1:5000
+---
 
-## What changed vs. your original project
+## 📌 Overview
 
-**Kept intact:** the overall pipeline (extract → match → score → rank →
-recommend → interview questions), Flask routing style, and the general shape
-of `matcher.py` / `project_extractor.py` / `info_extractor.py`.
+Recruiters often have to manually review a large number of resumes for a single job opening. This process can be time-consuming and inconsistent.
 
-**Frontend** (`templates/`, `static/`) — completely new, since none was
-uploaded:
-- `index.html` — dashboard with animated stat cards, drag-and-drop resume
-  upload, job description form, and a simulated AI-pipeline processing
-  overlay (upload → extract → analyze → compare → score → questions).
-- `ranking.html` — sortable, searchable, filterable candidate ranking table
-  with match-score badges.
-- `profile.html` — full candidate profile: animated score ring, score
-  breakdown bars, skills analysis (matching / missing / additional),
-  explainable AI analysis, hiring recommendation, education/experience/
-  projects, and the personalized interview question board (filter by
-  category, regenerate, copy, export as .txt).
-- `static/css/style.css` — dark navy/indigo glass UI with a violet + teal
-  accent pair, `Space Grotesk` / `Inter` / `JetBrains Mono` type system.
-- `static/js/main.js` — dropzone, processing-pipeline animation, animated
-  counters/bars, question filtering, copy-to-clipboard, export.
+The **AI Resume Screener** automates important parts of the recruitment screening process.
 
-**Backend logic — real fixes, not just cosmetic:**
-- `matcher.py`: skill matching now uses whole-word matching instead of
-  substring matching. Previously a single-letter skill like `"c"` matched
-  inside *any* word containing the letter c (e.g. "science",
-  "certification"), which silently inflated everyone's skill list. Also
-  added correct display casing (`SQL`, `AWS`, `HTML`, not `Sql`/`Aws`/`Html`).
-- `interview_questions.py`: this was the main ask. Questions are now built
-  per-candidate from **their own** detected skills, projects, work
-  experience, and the specific gap between their resume and the job
-  description — grouped into Technical / Resume-Based / Job-Specific /
-  Behavioral / Skill-Gap categories with difficulty labels, instead of one
-  shared fixed list for every candidate.
-- `resume_parser.py`: now supports `.docx` in addition to `.pdf`, and raises
-  friendly, catchable errors instead of crashing the request.
-- `summary.py` / `recommendation.py`: reasoning is now grounded in the
-  candidate's actual matched/missing skills (e.g. "lacks AWS, TensorFlow")
-  instead of a generic templated sentence, and a `score_breakdown()` helper
-  produces the Skills/Experience/Education/Keywords/Overall split shown on
-  the profile page.
-- `project_extractor.py`: added `extract_education()` using the same
-  section-scanning approach as the existing projects/experience extractors.
-- `app.py`: added a dashboard route with real stats, a candidate profile
-  route (`/candidate/<id>`), a "regenerate questions" endpoint, DOCX support
-  wiring, flash-based friendly error handling (oversized upload, missing JD,
-  unreadable file, unsupported format), and secured filenames on save.
+Users can upload multiple resumes, provide a job description, and receive:
 
-## Notes / next steps if you keep building this
+- Candidate matching scores
+- Candidate ranking
+- Matching and missing skills
+- Experience and education analysis
+- Hiring recommendations
+- Candidate summaries
+- Personalized interview questions
 
-- Candidate data is stored in-memory (`all_candidates` in `app.py`) — it
-  resets on server restart. Fine for a demo; swap for SQLite/Postgres if you
-  need it to persist.
-- The skill list in `matcher.py` is still a fixed vocabulary. For the JD
-  "paste & auto-extract required/preferred skills" feature to fully live up
-  to the brief, that list would need to grow or be swapped for an actual
-  NLP/keyword-extraction step.
-- No `.env`/API key is required anywhere in this version — all "AI" here is
-  rule-based (skill matching + templated reasoning), not an LLM call. If you
-  want LLM-generated summaries/questions instead, that's a clean drop-in
-  behind `summary.py` / `interview_questions.py`.
+The system is designed as an AI-assisted recruitment tool where final hiring decisions remain with human recruiters.
+
+---
+
+## 🚀 Live Demo
+
+👉 **Try the application:**  
+https://ai-resume-screener-lzl3.onrender.com
+
+---
+
+## ✨ Features
+
+### 📄 Resume Upload
+
+- Upload PDF resumes
+- Upload DOCX resumes
+- Multiple resumes can be uploaded
+- Secure filename handling
+
+### 🎯 Resume & Job Matching
+
+The system compares candidate resumes with the requirements of a job description.
+
+It analyzes:
+
+- Required skills
+- Preferred skills
+- Experience
+- Education
+- Relevant keywords
+
+### 📊 Candidate Scoring
+
+Each candidate receives an overall match score based on multiple factors.
+
+The application provides a score breakdown for:
+
+- Skills
+- Experience
+- Education
+- Keywords
+- Overall Match
+
+### 🏆 Candidate Ranking
+
+Candidates are automatically ranked according to their match scores.
+
+Recruiters can quickly identify the strongest candidates.
+
+### 🔍 Skill Gap Analysis
+
+The system identifies:
+
+- Matching skills
+- Missing skills
+- Additional skills
+
+This helps recruiters understand why a candidate received a particular score.
+
+### 💡 Hiring Recommendation
+
+The system generates a recommendation based on the candidate's resume and job requirements.
+
+### 🎤 Personalized Interview Questions
+
+Interview questions are generated based on the individual candidate's:
+
+- Skills
+- Projects
+- Experience
+- Resume information
+- Job requirements
+- Skill gaps
+
+Questions are organized into categories such as:
+
+- Technical
+- Resume-Based
+- Job-Specific
+- Behavioral
+- Skill Gap
+
+### 📋 Candidate Profile
+
+Each candidate has a detailed profile containing:
+
+- Match score
+- Skill analysis
+- Experience
+- Education
+- Projects
+- Hiring recommendation
+- Interview questions
+
+---
+
+## 🧠 How It Works
+
+```text
+        Resume Upload
+              ↓
+       Resume Parsing
+              ↓
+    Information Extraction
+              ↓
+       Skill Detection
+              ↓
+     Job Requirement Analysis
+              ↓
+       Resume Matching
+              ↓
+       Candidate Scoring
+              ↓
+      Candidate Ranking
+              ↓
+       Skill Gap Analysis
+              ↓
+   Hiring Recommendation
+              ↓
+ Personalized Interview Questions
